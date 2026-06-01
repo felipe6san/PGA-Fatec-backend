@@ -1,12 +1,13 @@
 FROM node:slim
 
-# Instalar dependências para compilar módulos nativos
+# Instalar dependências para compilar módulos nativos + OpenSSH para Azure WebSSH
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
     wget \
     ca-certificates \
+    openssh-server \
     fonts-liberation \
     libnss3 \
     libatk1.0-0 \
@@ -28,6 +29,15 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Configurar SSH para Azure App Service (porta 2222, senha "Docker!")
+RUN mkdir -p /run/sshd \
+    && echo "root:Docker!" | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config \
+    && echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+
+EXPOSE 2222
+
 WORKDIR /app
 
 # Copiar arquivos de configuração
@@ -48,4 +58,4 @@ RUN npm run build
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]
+CMD ["sh", "-c", "/usr/sbin/sshd && npx prisma migrate deploy && npm run start:prod"]
