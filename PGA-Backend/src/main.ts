@@ -13,6 +13,8 @@ async function bootstrap() {
 
   const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://pgafatec.azurewebsites.net',
+    'https://pgafatecbackend-ftgqghg6dqabcrcn.eastus2-01.azurewebsites.net',
     'http://localhost:5173',
     'http://localhost:4173',
     'http://localhost',
