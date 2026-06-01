@@ -9,7 +9,7 @@ import {
   Get,
   Res,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, CookieOptions } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LoginService } from './services/login.service';
 import { JwtService } from '@nestjs/jwt';
@@ -23,10 +23,10 @@ import { SelectContextDto } from './dto/select-context.dto';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-const COOKIE_BASE = {
+const COOKIE_BASE: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+  sameSite: isProduction ? 'none' : 'lax',
   path: '/',
 };
 
