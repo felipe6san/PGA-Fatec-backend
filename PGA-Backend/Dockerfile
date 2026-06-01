@@ -40,8 +40,6 @@ EXPOSE 2222
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-
 # Copiar arquivos de configuração
 COPY package*.json ./
 COPY prisma ./prisma/
@@ -57,6 +55,10 @@ COPY . .
 
 # Construir aplicação
 RUN npm run build
+
+# Remover devDependencies após build e setar NODE_ENV
+RUN npm prune --production
+ENV NODE_ENV=production
 
 EXPOSE 3000
 
