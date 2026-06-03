@@ -78,6 +78,15 @@ export class CreateUserService {
           );
         }
       }
+
+      if (tipo === 'CPS') {
+        const tipoAlvo = data.tipo_usuario as string;
+        if (tipoAlvo === 'Administrador' || tipoAlvo === 'CPS') {
+          throw new ForbiddenException(
+            'CPS não pode criar usuários do tipo Administrador ou CPS',
+          );
+        }
+      }
     } else {
       data.tipo_usuario = 'Administrador';
     }
@@ -105,6 +114,9 @@ export class CreateUserService {
       const user = await this.userRepository.create(
         data as Prisma.PessoaCreateInput,
       );
+      if (String(data.tipo_usuario) === 'Diretor' && data.unidade_id) {
+        await this.setAsUnitDirector(user.pessoa_id, data.unidade_id);
+      }
       const { senha: _s, ...userSafe } = user;
       return { user: userSafe as Pessoa, email_sent: false };
     }
@@ -117,10 +129,14 @@ export class CreateUserService {
     );
     const user = await this.userRepository.create(createData);
 
+    if (String(data.tipo_usuario) === 'Diretor' && data.unidade_id) {
+      await this.setAsUnitDirector(user.pessoa_id, data.unidade_id);
+    }
+
     let emailSent = false;
     try {
       if (user.email) {
-        await this.forgotPasswordService.execute(user.email);
+        await this.forgotPasswordService.execute(user.email, true);
         emailSent = true;
       }
     } catch {
@@ -129,5 +145,29 @@ export class CreateUserService {
 
     const { senha: _senha, ...userSafe } = user;
     return { user: userSafe as Pessoa, email_sent: emailSent };
+  }
+
+  private async setAsUnitDirector(
+    pessoaId: string,
+    unidadeId: string,
+  ): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      const unidade = await tx.unidade.findUnique({
+        where: { unidade_id: unidadeId },
+        select: { diretor_id: true },
+      });
+
+      if (unidade?.diretor_id && unidade.diretor_id !== pessoaId) {
+        await tx.pessoa.update({
+          where: { pessoa_id: unidade.diretor_id },
+          data: { tipo_usuario: 'Coordenador' },
+        });
+      }
+
+      await tx.unidade.update({
+        where: { unidade_id: unidadeId },
+        data: { diretor_id: pessoaId },
+      });
+    });
   }
 }

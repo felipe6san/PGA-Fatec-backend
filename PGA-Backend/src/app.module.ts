@@ -26,6 +26,7 @@ import { UnitModule } from './modules/unit/unit.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RegionalModule } from './modules/regional/regional.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { VoiceModule } from './modules/voice/voice.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { ChatModule } from './modules/chat/chat.module';
     AuditModule,
     RegionalModule,
     ChatModule,
+    VoiceModule,
   ],
   providers: [
     PrismaService,

@@ -30,6 +30,7 @@ describe('ForgotPasswordService', () => {
     expect(mockSendPasswordReset.execute).toHaveBeenCalledWith(
       'a@b.com',
       'token123',
+      false,
     );
   });
 });
