@@ -1,6 +1,6 @@
 FROM node:slim
 
-# Instalar dependências para compilar módulos nativos + OpenSSH para Azure WebSSH
+# Instalar dependências para compilar módulos nativos + OpenSSH + Chromium para puppeteer
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
@@ -27,7 +27,12 @@ RUN apt-get update && apt-get install -y \
     libxss1 \
     libxkbcommon0 \
     libxrender1 \
+    chromium \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Usar o Chromium do sistema no puppeteer (evita download de ~300MB no build)
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Configurar SSH para Azure App Service (porta 2222, senha "Docker!")
 RUN mkdir -p /run/sshd \
